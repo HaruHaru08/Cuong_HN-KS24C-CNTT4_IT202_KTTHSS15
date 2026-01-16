@@ -126,3 +126,27 @@ begin
     end if;
 end //
 delimiter ;
+-- Câu 6
+delimiter //
+create procedure sp_DeleteStudentGrade(
+p_StudentID Char(5),
+p_SubjectID char(5)
+)
+begin
+	declare p_OldScore decimal(4,2);
+    declare p_NewScore decimal(4,2);
+    select OldScore into p_OldScore from GradeLog
+    where StudentID=p_StudentID;
+     select NewScore into p_NewScore from GradeLog
+    where StudentID=p_StudentID;
+	start transaction;
+    insert into GradeLog(StudentID,OldScore,NewScore,ChangeDate)
+    value (p_StudentID,p_OldScore,p_NewScore);
+    delete from Grades where StudentID=p_StudentID;
+    if StudentID<>p_StudentID then 
+    signal sqlstate '45000' set message_text='Xóa không thành công';
+    rollback;
+    end if;
+    commit;
+end //
+delimiter ;
